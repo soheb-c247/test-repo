@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="AccuCare Pathology Lab">
+  <rect x="0" y="0" width="64" height="64" rx="16" ry="16" fill="#0B2A4A"/>
+  <path d="M25 10 H39 V25 H54 V39 H39 V54 H25 V39 H10 V25 H25 Z" fill="#14B8A6"/>
+  <path d="M28 20 H36 V29.5 L43.2 42.2 C44.3 44.2 42.9 46.6 40.6 46.6 H23.4 C21.1 46.6 19.7 44.2 20.8 42.2 L28 29.5 Z" fill="#FFFFFF"/>
+  <path d="M24.3 37.6 H39.7 L42.4 42.4 C42.9 43.4 42.2 44.6 41.1 44.6 H22.9 C21.8 44.6 21.1 43.4 21.6 42.4 Z" fill="#0EA5A4"/>
+  <rect x="26.5" y="18" width="11" height="3.2" rx="1.6" ry="1.6" fill="#FFFFFF"/>
+  <circle cx="29.5" cy="34" r="1.4" fill="#0EA5A4"/>
+  <circle cx="33.6" cy="31.2" r="1" fill="#0EA5A4"/>
+</svg>
