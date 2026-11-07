@@ -1,6 +1,6 @@
 @php
     $editing = $report->exists;
-    $title = $editing ? ($report->isUnderCorrection() ? 'Correct report '.$report->report_number : 'Edit draft '.$report->report_number) : 'New report';
+    $title = $editing ? ($report->isUnderCorrection() ? 'Correct report '.$report->report_number : 'Edit report '.$report->report_number) : 'New report';
     $dt = fn ($value) => $value ? \Illuminate\Support\Carbon::parse($value)->format('Y-m-d\TH:i') : '';
     $testOptions = $tests->map(fn ($t) => [
         'id' => $t->id,
@@ -279,11 +279,11 @@
 
             @if (! $editing)
                 <div class="card">
-                    <x-empty-state icon="beaker" title="Results are entered after the draft is created"
+                    <x-empty-state icon="beaker" title="Results are entered after the report is created"
                                    message="Fill in the patient details, choose the tests and select “Save & enter results”. The result form is generated from each test definition." />
                 </div>
             @elseif ($report->items->isEmpty())
-                <div class="card"><x-empty-state icon="flask" title="No tests on this report" message="Select at least one test above and save the draft." /></div>
+                <div class="card"><x-empty-state icon="flask" title="No tests on this report" message="Select at least one test above and save." /></div>
             @else
                 <div class="space-y-6">
                     @foreach ($report->items as $item)
@@ -299,13 +299,12 @@
                 <div class="flex items-center gap-2">
                     <a href="{{ $editing ? route('reports.show', $report) : route('reports.index') }}" class="btn btn-ghost">Cancel</a>
                     @if ($editing && $report->revision === 0)
-                        <button type="submit" form="delete-draft" class="btn btn-danger-ghost"><x-icon name="trash" /> Discard draft</button>
+                        <button type="submit" form="delete-draft" class="btn btn-danger-ghost"><x-icon name="trash" /> Discard report</button>
                     @endif
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     @if ($editing)
-                        <button type="submit" name="intent" value="save" class="btn btn-secondary"><x-icon name="check" /> Save draft</button>
-                        <button type="submit" name="intent" value="review" class="btn btn-primary">Save &amp; review <x-icon name="chevron-right" /></button>
+                        <button type="submit" name="intent" value="finalize" class="btn btn-primary"><x-icon name="check" /> Save report</button>
                     @else
                         <button type="submit" name="intent" value="continue" class="btn btn-primary">Save &amp; enter results <x-icon name="chevron-right" /></button>
                     @endif
@@ -316,7 +315,7 @@
 
     @if ($editing && $report->revision === 0)
         <form id="delete-draft" method="POST" action="{{ route('reports.destroy', $report) }}"
-              data-confirm="Discard draft {{ $report->report_number }}? Entered results will be removed." data-confirm-title="Discard draft" data-confirm-label="Discard draft" data-confirm-danger="1">
+              data-confirm="Discard report {{ $report->report_number }}? Entered results will be removed." data-confirm-title="Discard report" data-confirm-label="Discard report" data-confirm-danger="1">
             @csrf
             @method('DELETE')
         </form>

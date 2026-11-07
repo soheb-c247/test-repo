@@ -83,6 +83,13 @@
             </form>
 
             <div class="ml-auto flex items-center gap-2">
+                {{-- Applies to report preview, print and PDF download. Space is always reserved; default is off. --}}
+                <label class="hidden cursor-pointer items-center gap-2 text-xs font-medium text-slate-600 md:inline-flex" title="Print the lab header and footer on reports (leave off for pre-printed stationery)"
+                       x-data="{ on: document.cookie.includes('report_letterhead=1') }">
+                    <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-brand-600" x-model="on"
+                           @change="document.cookie = 'report_letterhead=' + (on ? 1 : 0) + '; path=/; max-age=31536000; SameSite=Lax'; document.querySelectorAll('iframe').forEach(f => { try { f.contentWindow.location.reload() } catch (e) {} })">
+                    Header / footer
+                </label>
                 <a href="{{ route('reports.create') }}" class="btn btn-accent hidden sm:inline-flex">
                     <x-icon name="plus" /> New report
                 </a>

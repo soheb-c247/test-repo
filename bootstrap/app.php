@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
             SecurityHeaders::class,
         ]);
 
+        // Plain UI-preference cookie written by the letterhead toggle (not sensitive).
+        $middleware->encryptCookies(except: ['report_letterhead']);
+
         $middleware->alias([
             'lab.admin' => EnsureLabAdministrator::class,
         ]);

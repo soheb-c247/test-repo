@@ -25,7 +25,10 @@ class ReportPdfService
             'evaluator' => $this->evaluator,
             'lab' => config('lab'),
             'logo' => $this->logoDataUri($forPdf),
+            'watermark' => $this->svgDataUri('accucare-watermark.svg'),
+            'wordmark' => $this->svgDataUri('accucare-wordmark.svg'),
             'forPdf' => $forPdf,
+            'letterhead' => request()->cookies->get('report_letterhead') === '1',
             'isDraft' => ! $report->isFinal(),
             'generatedAt' => now(),
         ])->render();
@@ -75,15 +78,17 @@ class ReportPdfService
     }
 
     /**
-     * The PDF embeds the raster mark (most reliable in dompdf); the HTML
-     * preview uses the crisp vector version.
+     * Letterhead logo (vector, used for both the preview and the PDF).
      */
     private function logoDataUri(bool $forPdf): string
     {
-        $path = public_path($forPdf ? 'images/accucare-mark.png' : 'images/accucare-mark.svg');
-        $mime = $forPdf ? 'image/png' : 'image/svg+xml';
-        $data = is_readable($path) ? file_get_contents($path) : '';
+        return $this->svgDataUri('accucare-logo.svg');
+    }
 
-        return 'data:'.$mime.';base64,'.base64_encode((string) $data);
+    private function svgDataUri(string $file): string
+    {
+        $data = @file_get_contents(public_path('images/'.$file));
+
+        return 'data:image/svg+xml;base64,'.base64_encode((string) $data);
     }
 }

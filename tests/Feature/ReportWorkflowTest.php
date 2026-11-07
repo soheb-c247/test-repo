@@ -66,7 +66,7 @@ class ReportWorkflowTest extends TestCase
         $this->get(route('reports.edit', $report))->assertOk()->assertSee('Haemoglobin');
 
         $this->put(route('reports.update', $report), $this->updatePayload($report, ['hb' => '11.2', 'remark' => 'Abnormal']))
-            ->assertSessionHasNoErrors()->assertRedirect();
+            ->assertSessionHasNoErrors()->assertRedirect(route('reports.show', $report));
 
         $item = $report->items()->first();
         $this->assertSame('11.2', $item->results['hb']);
@@ -74,10 +74,7 @@ class ReportWorkflowTest extends TestCase
         $this->assertSame('low', $item->flags['hb'], 'female interval 12–15.6 applies');
         $this->assertSame(1, $report->fresh()->abnormal_count);
 
-        $this->get(route('reports.preview', $report))->assertOk()->assertSee('DRAFT')->assertSee('11.2');
-
-        $this->post(route('reports.finalize', $report), ['lock_version' => $report->fresh()->lock_version])
-            ->assertRedirect(route('reports.show', $report));
+        $this->get(route('reports.preview', $report))->assertOk()->assertSee('11.2')->assertDontSee('LABORATORY REPORT')->assertDontSee('Reported on');
 
         $report->refresh();
         $this->assertTrue($report->isFinal());
@@ -157,7 +154,7 @@ class ReportWorkflowTest extends TestCase
 
         $this->put(route('reports.update', $report), $stale)->assertSessionHasNoErrors();
         $this->put(route('reports.update', $report), array_merge($stale, ['results' => [$report->items->first()->id => ['hb' => '9']]]))
-            ->assertSessionHasErrors('lock_version');
+            ->assertSessionHasErrors();
 
         $this->assertSame('14', $report->items()->first()->results['hb']);
     }
@@ -287,11 +284,20 @@ class ReportWorkflowTest extends TestCase
         $this->assertSame('Kavya Nair', $report->fresh()->patient_name, 'Report keeps the name it was issued with');
     }
 
+    public function test_letterhead_is_off_by_default_and_toggled_by_cookie(): void
+    {
+        $this->actingAsAdmin();
+        $report = $this->finalizedReport('14.5');
+
+        $this->get(route('reports.preview', $report))->assertSee('screen letterhead-off"', false);
+        $this->withUnencryptedCookie('report_letterhead', '1')->get(route('reports.preview', $report))
+            ->assertDontSee('screen letterhead-off"', false)->assertSee('Pathology Lab', false);
+    }
+
     private function finalizedReport(string $hb, $test = null, array $overrides = []): Report
     {
         $report = $this->draftReport($test, $overrides);
         $this->put(route('reports.update', $report), $this->updatePayload($report, ['hb' => $hb]))->assertSessionHasNoErrors();
-        $this->post(route('reports.finalize', $report), ['lock_version' => $report->fresh()->lock_version])->assertSessionHasNoErrors();
 
         return $report->fresh();
     }

@@ -22,20 +22,8 @@
 <x-app-layout :title="$report->report_number" :breadcrumbs="['Reports' => route('reports.index'), $report->report_number => null]">
     <x-slot:actions>
         <x-report-status :report="$report" />
-        @if ($report->isDraft())
-            <a href="{{ route('reports.edit', $report) }}" class="btn btn-secondary"><x-icon name="edit" /> Edit</a>
-        @endif
         <a href="{{ route('reports.pdf', [$report, 'inline' => 1]) }}" target="_blank" rel="noopener" class="btn btn-secondary"><x-icon name="printer" /> Print</a>
-        <a href="{{ route('reports.pdf', $report) }}" class="btn btn-secondary"><x-icon name="download" /> {{ $report->isDraft() ? 'Draft PDF' : 'Download PDF' }}</a>
-        @if ($report->isDraft())
-            <form method="POST" action="{{ route('reports.finalize', $report) }}"
-                  data-confirm="Finalize and release {{ $report->report_number }}? The report becomes read-only; later changes require a documented correction."
-                  data-confirm-title="Finalize report" data-confirm-label="Finalize &amp; release">
-                @csrf
-                <input type="hidden" name="lock_version" value="{{ $report->lock_version }}">
-                <button type="submit" class="btn btn-accent" @disabled(! $ready)><x-icon name="check-circle" /> Finalize</button>
-            </form>
-        @endif
+        <a href="{{ route('reports.pdf', $report) }}" class="btn btn-secondary"><x-icon name="download" /> Download PDF</a>
     </x-slot:actions>
 
     @if ($report->is_demo)
@@ -50,50 +38,17 @@
             <div class="card-header">
                 <div>
                     <h2 class="card-title">Report preview</h2>
-                    <p class="text-xs text-slate-500">Rendered from this report's stored snapshot — the PDF uses the same layout.</p>
+                    <p class="text-xs text-slate-500">Exactly as it prints — every page carries the header and footer space.</p>
                 </div>
-                <a href="{{ route('reports.preview', $report) }}" target="_blank" rel="noopener" class="btn btn-sm btn-ghost"><x-icon name="eye" /> Open in new tab</a>
+                <a href="{{ route('reports.pdf', [$report, 'inline' => 1]) }}" target="_blank" rel="noopener" class="btn btn-sm btn-ghost"><x-icon name="eye" /> Open in new tab</a>
             </div>
             <div class="bg-slate-100 p-3 sm:p-6">
-                <iframe src="{{ route('reports.preview', $report) }}" title="Preview of report {{ $report->report_number }}"
+                <iframe src="{{ route('reports.pdf', [$report, 'inline' => 1]) }}#toolbar=0&navpanes=0" title="Preview of report {{ $report->report_number }}"
                         class="mx-auto block h-[1100px] w-full max-w-[820px] rounded-md bg-white shadow-card ring-1 ring-slate-200" loading="lazy"></iframe>
             </div>
         </section>
 
         <aside class="space-y-6">
-            @if ($report->isDraft())
-                <section class="card" aria-labelledby="checklist-title">
-                    <div class="card-header"><h2 id="checklist-title" class="card-title">Ready to finalize?</h2></div>
-                    <ul class="card-body space-y-2 text-sm">
-                        <li class="flex items-start gap-2">
-                            <x-icon :name="$report->items->isNotEmpty() ? 'check-circle' : 'alert'" :class="\Illuminate\Support\Arr::toCssClasses(['mt-0.5 h-4 w-4 shrink-0', 'text-brand-600' => $report->items->isNotEmpty(), 'text-amber-600' => $report->items->isEmpty()])" />
-                            {{ $report->items->count() }} {{ Str::plural('test', $report->items->count()) }} on the report
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <x-icon :name="$report->collected_at ? 'check-circle' : 'alert'" :class="\Illuminate\Support\Arr::toCssClasses(['mt-0.5 h-4 w-4 shrink-0', 'text-brand-600' => $report->collected_at, 'text-amber-600' => ! $report->collected_at])" />
-                            {{ $report->collected_at ? 'Sample collection time recorded' : 'Sample collection time is missing' }}
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <x-icon :name="empty($missing) ? 'check-circle' : 'alert'" :class="\Illuminate\Support\Arr::toCssClasses(['mt-0.5 h-4 w-4 shrink-0', 'text-brand-600' => empty($missing), 'text-amber-600' => ! empty($missing)])" />
-                            @if (empty($missing))
-                                All required results entered
-                            @else
-                                <span>{{ count($missing) }} required {{ Str::plural('result', count($missing)) }} missing
-                                    <span class="mt-1 block text-xs text-slate-500">{{ implode(' · ', array_slice($missing, 0, 6)) }}{{ count($missing) > 6 ? ' …' : '' }}</span>
-                                </span>
-                            @endif
-                        </li>
-                    </ul>
-                    <div class="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">
-                        @if ($ready)
-                            Opening the preview or PDF does not finalize the report — use <strong>Finalize</strong> when the results are verified.
-                        @else
-                            <a href="{{ route('reports.edit', $report) }}#results" class="font-semibold text-brand-700 hover:underline">Complete the results</a> to enable finalization.
-                        @endif
-                    </div>
-                </section>
-            @endif
-
             <section class="card" aria-labelledby="summary-title">
                 <div class="card-header"><h2 id="summary-title" class="card-title">Summary</h2></div>
                 <dl class="card-body grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
@@ -109,7 +64,7 @@
                     <dt class="text-slate-500">Referred by</dt><dd>{{ $report->referring_doctor ?: '—' }}</dd>
                     <dt class="text-slate-500">Registered</dt><dd>{{ $report->registered_at?->format('d M Y, H:i') }}</dd>
                     <dt class="text-slate-500">Collected</dt><dd>{{ $report->collected_at?->format('d M Y, H:i') ?? '—' }}</dd>
-                    <dt class="text-slate-500">Reported</dt><dd>{{ $report->isFinal() ? $report->reported_at?->format('d M Y, H:i') : 'Not yet released' }}</dd>
+                    <dt class="text-slate-500">Reported</dt><dd>{{ $report->reported_at?->format('d M Y, H:i') ?? '—' }}</dd>
                     @if ($report->isFinal())
                         <dt class="text-slate-500">Finalized by</dt><dd>{{ $report->finalizer?->name ?? '—' }}</dd>
                     @endif

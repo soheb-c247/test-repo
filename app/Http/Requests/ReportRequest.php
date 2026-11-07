@@ -53,7 +53,7 @@ class ReportRequest extends FormRequest
             'form_token' => [$updating ? 'nullable' : 'required', 'uuid'],
             'lock_version' => [$updating ? 'required' : 'nullable', 'integer'],
             'results' => ['nullable', 'array'],
-            'intent' => ['nullable', Rule::in(['save', 'review', 'continue'])],
+            'intent' => ['nullable', Rule::in(['save', 'review', 'continue', 'finalize'])],
         ];
     }
 

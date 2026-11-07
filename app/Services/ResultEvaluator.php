@@ -86,6 +86,28 @@ class ResultEvaluator
         return 'normal';
     }
 
+    /** Qualitative values that mean "nothing found" and are never highlighted. */
+    private const NEGATIVE_VALUES = [
+        'nil', 'nil seen', 'none', 'negative', 'neg', 'absent', 'normal', 'not seen', 'not detected',
+        'not found', 'non reactive', 'non-reactive', 'nonreactive', 'no', 'clear', '-', '—',
+        'yellow', 'pale yellow', 'light yellow', 'straw', 'nad',
+    ];
+
+    /**
+     * Qualitative results (e.g. urine routine) are highlighted when anything
+     * other than a "nothing found" value is reported (positive, trace, present…).
+     */
+    public function isAbnormalQualitative(array $parameter, mixed $value): bool
+    {
+        if (! in_array($parameter['type'] ?? '', ['qualitative', 'select', 'text'], true) || ! is_string($value)) {
+            return false;
+        }
+
+        $normalised = mb_strtolower(trim($value));
+
+        return $normalised !== '' && ! in_array($normalised, self::NEGATIVE_VALUES, true);
+    }
+
     /**
      * Evaluate every numeric parameter of a schema.
      *

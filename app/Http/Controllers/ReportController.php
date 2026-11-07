@@ -60,7 +60,7 @@ class ReportController extends Controller
         return redirect()
             ->route('reports.edit', $report)
             ->withFragment('results')
-            ->with('success', "Draft {$report->report_number} created. Enter the results below.");
+            ->with('success', "Report {$report->report_number} created. Enter the results below.");
     }
 
     public function show(Report $report, ResultEvaluator $evaluator, BillingService $billing): View
@@ -106,18 +106,19 @@ class ReportController extends Controller
     public function update(ReportRequest $request, Report $report): RedirectResponse
     {
         $data = $request->validated();
-        $this->reports->updateDraft($report, $data, (array) $request->input('results', []), $request->user());
+        $saved = $this->reports->updateDraft($report, $data, (array) $request->input('results', []), $request->user());
 
-        if (($data['intent'] ?? 'save') === 'review') {
-            return redirect()->route('reports.show', $report)->with('success', 'Draft saved. Review the report before finalizing.');
+        // Saving results releases the report — there is no separate draft/review step.
+        try {
+            $this->reports->finalize($saved, $request->user(), $saved->lock_version);
+        } catch (ValidationException $e) {
+            return redirect()->route('reports.edit', $report)
+                ->withErrors($e->errors())
+                ->with('error', 'The report cannot be saved yet — complete the highlighted fields.');
         }
 
-        $redirect = redirect()->route('reports.edit', $report);
-        if (($data['intent'] ?? null) === 'continue') {
-            $redirect->withFragment('results');
-        }
-
-        return $redirect->with('success', 'Draft saved.');
+        return redirect()->route('reports.show', $report)
+            ->with('success', "Report {$report->report_number} saved.");
     }
 
     public function finalize(Request $request, Report $report): RedirectResponse

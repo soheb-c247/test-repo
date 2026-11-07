@@ -14,10 +14,14 @@
 return [
     'name' => env('LAB_NAME', 'AccuCare Pathology Lab'),
     'tagline' => env('LAB_TAGLINE', 'Accurate diagnostics. Compassionate care.'),
-    'address' => env('LAB_ADDRESS', ''),
-    'phone' => env('LAB_PHONE', ''),
+    'address' => env('LAB_ADDRESS', 'Sabji market ke pass nagori bazar mahidpur dist. ujjain m.p.'),
+    'phone' => env('LAB_PHONE', '+917024193694'),
     'email' => env('LAB_EMAIL', ''),
     'website' => env('LAB_WEBSITE', ''),
+    'timings' => env('LAB_TIMINGS', '8.30 am TO 9.00 pm'),
+    'home_collection' => env('LAB_HOME_COLLECTION', '7024193694'),
+    // Quote printed in the green footer bar of the letterhead. Leave empty to omit.
+    'footer_quote' => env('LAB_FOOTER_QUOTE', 'Health is the greatest gift — accurate reports are the first step to it.'),
     'registration_number' => env('LAB_REGISTRATION_NUMBER', ''),
 
     // Report number prefix, e.g. ACP-2610-00042.

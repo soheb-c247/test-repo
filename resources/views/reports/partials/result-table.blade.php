@@ -47,7 +47,11 @@
                             <td class="px-3 py-1.5">
                                 <label class="sr-only" for="{{ $id }}-{{ $row['key'] }}-{{ $column['key'] }}">{{ $row['label'] }} — {{ $column['label'] }}</label>
                                 @if ($column['type'] === 'select')
-                                    <select id="{{ $id }}-{{ $row['key'] }}-{{ $column['key'] }}" name="{{ $name }}[rows][{{ $row['key'] }}][{{ $column['key'] }}]" class="input input-sm min-w-[8rem]">
+                                    <select id="{{ $id }}-{{ $row['key'] }}-{{ $column['key'] }}" name="{{ $name }}[rows][{{ $row['key'] }}][{{ $column['key'] }}]" data-col="{{ $column['key'] }}" class="input input-sm min-w-[8rem] {{ $column['key'] === 'result' && (string) $cell === 'Positive' ? 'font-bold text-red-700' : '' }}"
+                                            @if ($column['key'] === 'dilution' && collect($parameter['columns'])->contains('key', 'result'))
+                                            {{-- Titre 1:20 / 1:40 (or Negative) reads as Negative, anything higher as Positive. --}}
+                                            @change="const r = $el.closest('tr').querySelector('[data-col=result]'); if (r) { r.value = $el.value === '' ? '' : (['Negative', '1:20', '1:40'].includes($el.value) ? 'Negative' : 'Positive'); r.classList.toggle('font-bold', r.value === 'Positive'); r.classList.toggle('text-red-700', r.value === 'Positive'); }"
+                                            @endif>
                                         <option value="">—</option>
                                         @foreach ($column['options'] as $option)
                                             <option value="{{ $option }}" @selected((string) $cell === $option)>{{ $option }}</option>
